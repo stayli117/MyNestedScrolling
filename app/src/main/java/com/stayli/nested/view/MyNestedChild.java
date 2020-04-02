@@ -3,6 +3,7 @@ package com.stayli.nested.view;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.LinearLayout;
 
@@ -18,6 +19,7 @@ import androidx.core.view.ViewCompat;
  * Description:
  */
 public class MyNestedChild extends LinearLayout implements NestedScrollingChild {
+    private static final String TAG = "MyNestedChild";
     private NestedScrollingChildHelper mNestedScrollingChildHelper;
     private final int[] offset = new int[2]; //偏移量
     private final int[] consumed = new int[2]; //偏移 消费
@@ -53,6 +55,11 @@ public class MyNestedChild extends LinearLayout implements NestedScrollingChild 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return super.dispatchTouchEvent(ev);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -60,24 +67,27 @@ public class MyNestedChild extends LinearLayout implements NestedScrollingChild 
             //按下
             case MotionEvent.ACTION_DOWN:
                 lastY = (int) event.getRawY();
+                Log.d(TAG, "onTouchEvent: ACTION_DOWN ---> 事件");
+                startNestedScroll(ViewCompat.SCROLL_AXIS_HORIZONTAL);
                 break;
             //移动
             case MotionEvent.ACTION_MOVE:
                 int y = (int) (event.getRawY());
                 int dy = y - lastY;
                 lastY = y;
-                if (startNestedScroll(ViewCompat.SCROLL_AXIS_HORIZONTAL)
-                        && dispatchNestedPreScroll(0, dy, consumed, offset)) //如果找到了支持嵌套滑动的父类,父类进行了一系列的滑动
+                Log.d(TAG, "onTouchEvent: ACTION_MOVE ---> 事件 转换为 dy " + dy);
+                if (dispatchNestedPreScroll(0, dy, consumed, offset)) //如果找到了支持嵌套滑动的父类,父类进行了一系列的滑动
                 {
                     //获取滑动距离
                     int remain = dy - consumed[1];
                     if (remain != 0) {
                         scrollBy(0, -remain);
                     }
-
+                    dispatchNestedScroll(0, dy, 0, remain, offset);
                 } else {
                     scrollBy(0, -dy);
                 }
+
                 break;
         }
 
@@ -111,11 +121,13 @@ public class MyNestedChild extends LinearLayout implements NestedScrollingChild 
 
     @Override
     public boolean startNestedScroll(int axes) {
+        Log.d(TAG, "startNestedScroll:  ---> 发起嵌套滚动");
         return getScrollingChildHelper().startNestedScroll(axes);
     }
 
     @Override
     public void stopNestedScroll() {
+        Log.d(TAG, "stopNestedScroll:  ---> 终止嵌套滚动");
         getScrollingChildHelper().stopNestedScroll();
     }
 
@@ -126,11 +138,13 @@ public class MyNestedChild extends LinearLayout implements NestedScrollingChild 
 
     @Override
     public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int[] offsetInWindow) {
+        Log.d(TAG, "dispatchNestedScroll:  ---> 分发嵌套滚动");
         return getScrollingChildHelper().dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
     }
 
     @Override
     public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
+        Log.d(TAG, "dispatchNestedPreScroll:  ---> 分发Pre嵌套滚动");
         return getScrollingChildHelper().dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
     }
 

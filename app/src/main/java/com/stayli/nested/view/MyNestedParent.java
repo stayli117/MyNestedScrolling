@@ -2,6 +2,7 @@ package com.stayli.nested.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -18,7 +19,7 @@ import androidx.core.view.ViewCompat;
  * Description: 嵌套滑动机制父View
  */
 public class MyNestedParent extends LinearLayout implements NestedScrollingParent {
-
+    private static final String TAG = "MyNestedParent";
     private MyNestedChild mNestedScrollChild;
     private NestedScrollingParentHelper mNestedScrollingParentHelper;
     private int mImgHeight;
@@ -32,7 +33,6 @@ public class MyNestedParent extends LinearLayout implements NestedScrollingParen
         mNestedScrollingParentHelper = new NestedScrollingParentHelper(this);
     }
 
-    //获取子view
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -55,17 +55,20 @@ public class MyNestedParent extends LinearLayout implements NestedScrollingParen
      */
     @Override
     public boolean onStartNestedScroll(@NonNull View child, @NonNull View target, int axes) {
+        Log.d(TAG, "onStartNestedScroll: ----> 接收Start嵌套滚动");
         return target instanceof MyNestedChild && (axes & ViewCompat.SCROLL_AXIS_HORIZONTAL) != 0;
     }
 
 
     @Override
     public void onNestedScrollAccepted(@NonNull View child, @NonNull View target, int nestedScrollAxes) {
+        Log.d(TAG, "onNestedScrollAccepted: -------> 接收Accepted嵌套滚动");
         mNestedScrollingParentHelper.onNestedScrollAccepted(child, target, nestedScrollAxes);
     }
 
     @Override
     public void onStopNestedScroll(@NonNull View target) {
+        Log.d(TAG, "onStopNestedScroll: -------> 终止嵌套滚动");
         mNestedScrollingParentHelper.onStopNestedScroll(target);
     }
 
@@ -79,6 +82,7 @@ public class MyNestedParent extends LinearLayout implements NestedScrollingParen
      */
     @Override
     public void onNestedPreScroll(@NonNull View target, int dx, int dy, @NonNull int[] consumed) {
+        Log.d(TAG, "onNestedPreScroll: 接收Pre嵌套滚动");
         // 无论是显示 还是 隐藏图片，其实都是在子child 滚动之前就行移动
         if (showImg(dy) || hideImg(dy)) {
             scrollBy(0, -dy);//滚动
@@ -89,7 +93,7 @@ public class MyNestedParent extends LinearLayout implements NestedScrollingParen
     //后于child滚动
     @Override
     public void onNestedScroll(@NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
-
+        Log.d(TAG, "onNestedScroll: 接收嵌套滚动");
     }
 
     @Override
